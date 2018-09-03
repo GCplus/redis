@@ -280,111 +280,87 @@ networking.c
 aof.c 和 rdb.c
 ---
 
-As you can guess from the names these files implement the RDB and AOF
-persistence for Redis. Redis uses a persistence model based on the `fork()`
-system call in order to create a thread with the same (shared) memory
-content of the main Redis thread. This secondary thread dumps the content
-of the memory on disk. This is used by `rdb.c` to create the snapshots
-on disk and by `aof.c` in order to perform the AOF rewrite when the
-append only file gets too big.
+您可以从名称中猜出这些文件为Redis实现RDB和AOF持久性。
+Redis使用基于`fork（）`系统调用的持久性模型，以创建具有Redis主线程相同（共享）内存内容的线程。
+此辅助线程会将内存的内容转储到磁盘上。这使用了`rdb.c`来创建在磁盘上的映像，并使用`aof.c`保证，
+当文件变得很大的时候进行AOF重写
 
-The implementation inside `aof.c` has additional functions in order to
-implement an API that allows commands to append new commands into the AOF
-file as clients execute them.
+`aof.c`中的实现具有附加功能，以便实现一个API，允许命令在客户端执行时将命令附加到AOF文件中。
 
-The `call()` function defined inside `server.c` is responsible to call
-the functions that in turn will write the commands into the AOF.
+`server.c`中定义的`call()`函数负责调用函数，这些函数又将命令写入AOF。
 
 db.c
 ---
 
-Certain Redis commands operate on specific data types, others are general.
-Examples of generic commands are `DEL` and `EXPIRE`. They operate on keys
-and not on their values specifically. All those generic commands are
-defined inside `db.c`.
+某些Redis命令对特定数据类型进行操作，其他命令则是通用的。
+通用命令的示例是“DEL”和“EXPIRE”。 它们专门操作键(key)，而不是它们的值(value)。 所有这些通用命令都在`db.c`中定义。
 
-Moreover `db.c` implements an API in order to perform certain operations
-on the Redis dataset without directly accessing the internal data structures.
+此外，`db.c`实现了一个API，以便在不直接访问内部数据结构的情况下对Redis数据集执行某些操作。
 
-The most important functions inside `db.c` which are used in many commands
-implementations are the following:
+许多常用的命令在`db.c`中的重要函数实现如下：
 
-* `lookupKeyRead()` and `lookupKeyWrite()` are used in order to get a pointer to the value associated to a given key, or `NULL` if the key does not exist.
-* `dbAdd()` and its higher level counterpart `setKey()` create a new key in a Redis database.
-* `dbDelete()` removes a key and its associated value.
-* `emptyDb()` removes an entire single database or all the databases defined.
+* `lookupKeyRead()` 和 `lookupKeyWrite()` 用于获取指向与给定键关联的值的指针，如果键不存在则使用`NULL`。
+* `dbAdd()`及其更高级别的counterpart `setKey()`在Redis数据库中创建一个新的key。
+* `dbDelete()` 删除键及其关联值。
+* `emptyDb()` 删除整个单个数据库或定义的所有数据库。
 
-The rest of the file implements the generic commands exposed to the client.
+文件的其余部分实现了暴露给客户端的通用命令。
 
 object.c
 ---
 
-The `robj` structure defining Redis objects was already described. Inside
-`object.c` there are all the functions that operate with Redis objects at
-a basic level, like functions to allocate new objects, handle the reference
-counting and so forth. Notable functions inside this file:
+已经描述了定义Redis对象的`robj`结构。 在`object.c`里面有所有在基本级别上使用Redis对象操作的函数，比如分配新对象的函数，处理引用计数等等。 此文件中的显着功能：
 
-* `incrRefcount()` and `decrRefCount()` are used in order to increment or decrement an object reference count. When it drops to 0 the object is finally freed.
-* `createObject()` allocates a new object. There are also specialized functions to allocate string objects having a specific content, like `createStringObjectFromLongLong()` and similar functions.
+* `incrRefcount()`和`decrRefCount()`用于递增或递减对象引用计数。 当它下降到0时，最终释放对象。
+* `createObject()`分配一个新对象。 还有专门的函数来分配具有特定内容的字符串(String)对象，例如`createStringObjectFromLongLong()`和类似的函数。
 
-This file also implements the `OBJECT` command.
+该文件还实现了`OBJECT`命令。
 
 replication.c
 ---
 
-This is one of the most complex files inside Redis, it is recommended to
-approach it only after getting a bit familiar with the rest of the code base.
-In this file there is the implementation of both the master and slave role
-of Redis.
+这是Redis中最复杂的文件之一，建议只有在熟悉其余代码库之后才能接近它。
+在此文件中，实现了Redis的主从角色。
 
-One of the most important functions inside this file is `replicationFeedSlaves()` that writes commands to the clients representing slave instances connected
-to our master, so that the slaves can get the writes performed by the clients:
-this way their data set will remain synchronized with the one in the master.
+这个文件中最重要的函数之一是`replicationFeedSlaves()`，它将命令写入代表连接到我们主服务器的从属实例的客户端，这样从服务器就可以获得客户端执行的写操作：
+这样，他们的数据集将与主数据集保持同步。
 
-This file also implements both the `SYNC` and `PSYNC` commands that are
-used in order to perform the first synchronization between masters and
-slaves, or to continue the replication after a disconnection.
+此文件还实现了`SYNC`和`PSYNC`命令，这些命令用于执行主站和从站之间的第一次同步，或者在断开连接后继续复制。
 
-Other C files
+其他 C 文件
 ---
 
-* `t_hash.c`, `t_list.c`, `t_set.c`, `t_string.c` and `t_zset.c` contains the implementation of the Redis data types. They implement both an API to access a given data type, and the client commands implementations for these data types.
-* `ae.c` implements the Redis event loop, it's a self contained library which is simple to read and understand.
-* `sds.c` is the Redis string library, check http://github.com/antirez/sds for more information.
-* `anet.c` is a library to use POSIX networking in a simpler way compared to the raw interface exposed by the kernel.
-* `dict.c` is an implementation of a non-blocking hash table which rehashes incrementally.
-* `scripting.c` implements Lua scripting. It is completely self contained from the rest of the Redis implementation and is simple enough to understand if you are familar with the Lua API.
-* `cluster.c` implements the Redis Cluster. Probably a good read only after being very familiar with the rest of the Redis code base. If you want to read `cluster.c` make sure to read the [Redis Cluster specification][3].
+* `t_hash.c`，`t_list.c`，`t_set.c`，`t_string.c`和`t_zset.c`包含Redis数据类型的实现。 它们实现了访问给定数据类型的API，以及客户端命令实现这些数据类型。
+* `ae.c`实现了Redis事件循环，它是一个独立的库，易于阅读和理解。
+* `sds.c`是Redis字符串(String)库，请查看 http://github.com/antirez/sds 以获取更多信息。
+* 与内核公开的原始接口相比，`anet.c`是一种使用POSIX网络的更简单的库。
+* `dict.c`是以递增方式进行的非阻塞哈希表的实现。
+* `scripting.c`实现了Lua脚本。 它完全独立于Redis实现的其余部分，如果您熟悉Lua API，它很容易理解。
+* `cluster.c`实现了Redis集群。 在非常熟悉Redis代码库的其余部分之后，这可能是一个很好的可供阅读的文件。 如果你想阅读`cluster.c`，请务必阅读[Redis Cluster规范][3]。
 
 [3]: http://redis.io/topics/cluster-spec
 
-Anatomy of a Redis command
+解析 Redis 命令
 ---
 
-All the Redis commands are defined in the following way:
+所有Redis命令都按以下方式定义：
 
     void foobarCommand(client *c) {
         printf("%s",c->argv[1]->ptr); /* Do something with the argument. */
         addReply(c,shared.ok); /* Reply something to the client. */
     }
 
-The command is then referenced inside `server.c` in the command table:
+然后在命令表的`server.c`中引用该命令：
 
     {"foobar",foobarCommand,2,"rtF",0,NULL,0,0,0,0,0},
 
-In the above example `2` is the number of arguments the command takes,
-while `"rtF"` are the command flags, as documented in the command table
-top comment inside `server.c`.
+在上面的例子中，`2`是命令所采用的参数个数，而`“rtF”`是命令标志，如`server.c`中命令表顶部注释中所述。
 
-After the command operates in some way, it returns a reply to the client,
-usually using `addReply()` or a similar function defined inside `networking.c`.
+命令以某种方式运行后，它会向客户端返回一个响应，通常使用`addReply()`或`networking.c`中定义的类似函数。
 
-There are tons of commands implementations inside th Redis source code
-that can serve as examples of actual commands implementations. To write
-a few toy commands can be a good exercise to familiarize with the code base.
+Redis源代码中有大量的命令实现，可以作为实际命令实现的示例。 编写一些小型命令可以很好地熟悉代码库。
 
-There are also many other files not described here, but it is useless to
-cover everything. We want to just help you with the first steps.
-Eventually you'll find your way inside the Redis code base :-)
+还有许多其他文件没有在这里描述，但它涵盖一切都不太重要。 我们想要帮助您完成第一步。
+最终，您将会在Redis代码库中找到属于自己的方式 :-)
 
 Enjoy!
