@@ -1,67 +1,67 @@
-[Note: this is the Redis manifesto, for general information about
-       installing and running Redis read the README file instead.]
+[注意：这是Redis宣言，有关的一般信息
+        安装和运行Redis改为读取README文件。]
 
 Redis Manifesto
 ===============
 
-1 - A DSL for Abstract Data Types. Redis is a DSL (Domain Specific Language)
-    that manipulates abstract data types and implemented as a TCP daemon.
-    Commands manipulate a key space where keys are binary-safe strings and
-    values are different kinds of abstract data types. Every data type
-    represents an abstract version of a fundamental data structure. For instance
-    Redis Lists are an abstract representation of linked lists. In Redis, the
-    essence of a data type isn't just the kind of operations that the data types
-    support, but also the space and time complexity of the data type and the
-    operations performed upon it.
+1 - 用于抽象数据类型的DSL。 Redis是DSL（领域特定语言）
+     它操纵抽象数据类型并实现为TCP守护进程。
+     命令操纵密钥空间，其中密钥是二进制安全字符串和
+     值是不同类型的抽象数据类型。 每种数据类型
+     表示基础数据结构的抽象版本。 例如
+     Redis列表是链接列表的抽象表示。 在Redis，
+     数据类型的本质不仅仅是数据类型的那种操作
+     支持，还有数据类型的空间和时间复杂性
+     在它上面进行的操作。
 
-2 - Memory storage is #1. The Redis data set, composed of defined key-value
-    pairs, is primarily stored in the computer's memory. The amount of memory in
-    all kinds of computers, including entry-level servers, is increasing
-    significantly each year. Memory is fast, and allows Redis to have very
-    predictable performance. Datasets composed of 10k or 40 millions keys will
-    perform similarly. Complex data types like Redis Sorted Sets are easy to
-    implement and manipulate in memory with good performance, making Redis very
-    simple. Redis will continue to explore alternative options (where data can
-    be optionally stored on disk, say) but the main goal of the project remains
-    the development of an in-memory database.
+2 - 内存存储是＃1。 Redis数据集，由定义的键值组成
+     对，主要存储在计算机的内存中。 内存量
+     各种计算机，包括入门级服务器，正在增加
+     每年都很重要。 内存很快，并且允许Redis拥有
+     可预测的表现。 由10k或4,000万个密钥组成的数据集将
+     表现相似。 像Redis排序集这样的复杂数据类型很容易
+     在内存中实现和操作具有良好的性能，使Redis非常
+     简单。 Redis将继续探索替代选择（数据可以在哪里）
+     可选地存储在磁盘上，但是项目的主要目标仍然存在
+     开发内存数据库。
 
-3 - Fundamental data structures for a fundamental API. The Redis API is a direct
-    consequence of fundamental data structures. APIs can often be arbitrary but
-    not an API that resembles the nature of fundamental data structures. If we
-    ever meet intelligent life forms from another part of the universe, they'll
-    likely know, understand and recognize the same basic data structures we have
-    in our computer science books. Redis will avoid intermediate layers in API,
-    so that the complexity is obvious and more complex operations can be
-    performed as the sum of the basic operations.
+3 - 基本API的基本数据结构。 Redis API是直接的
+     基础数据结构的后果。 API通常可以是任意的，但是
+     不是一个类似于基础数据结构本质的API。 要是我们
+     他们会从宇宙的另一部分遇到智能生命形式
+     可能知道，理解和认识我们拥有的相同基本数据结构
+     在我们的计算机科学书籍。 Redis将避免API中的中间层，
+     因此复杂性很明显，操作也更复杂
+     作为基本操作的总和来执行。
 
-4 - Code is like a poem; it's not just something we write to reach some
-    practical result. Sometimes people that are far from the Redis philosophy
-    suggest using other code written by other authors (frequently in other
-    languages) in order to implement something Redis currently lacks. But to us
-    this is like if Shakespeare decided to end Enrico IV using the Paradiso from
-    the Divina Commedia. Is using any external code a bad idea? Not at all. Like
-    in "One Thousand and One Nights" smaller self contained stories are embedded
-    in a bigger story, we'll be happy to use beautiful self contained libraries
-    when needed. At the same time, when writing the Redis story we're trying to
-    write smaller stories that will fit in to other code.
+4 - 代码就像一首诗; 这不仅仅是我们为了达到某些目的而写的东西
+     实际结果。 有时人们远离Redis哲学
+     建议使用其他作者编写的其他代码（经常在其他作者
+     语言）以实现Redis目前缺乏的东西。 但对我们来说
+     这就像莎士比亚决定使用Paradiso结束Enrico IV一样
+     Divina Commedia。 使用任何外部代码是个坏主意吗？ 一点也不。 喜欢
+     在“一千零一夜”中，嵌入了较小的自包含故事
+     在一个更大的故事中，我们很乐意使用漂亮的自包含库
+     需要的时候。 与此同时，在撰写我们正在尝试的Redis故事时
+     写出适合其他代码的小故事。
 
-5 - We're against complexity. We believe designing systems is a fight against
-    complexity. We'll accept to fight the complexity when it's worthwhile but
-    we'll try hard to recognize when a small feature is not worth 1000s of lines
-    of code. Most of the time the best way to fight complexity is by not
-    creating it at all.
+5 -我们反对复杂性。 我们相信设计系统是一场斗争
+     复杂。 当它值得时，我们会接受对抗复杂性的努力
+     我们会尽力识别小功能何时不值1000行
+     代码 大多数时候，对抗复杂性的最佳方法是不
+     创造它。
 
-6 - Two levels of API. The Redis API has two levels: 1) a subset of the API fits
-    naturally into a distributed version of Redis and 2) a more complex API that
-    supports multi-key operations. Both are useful if used judiciously but
-    there's no way to make the more complex multi-keys API distributed in an
-    opaque way without violating our other principles. We don't want to provide
-    the illusion of something that will work magically when actually it can't in
-    all cases. Instead we'll provide commands to quickly migrate keys from one
-    instance to another to perform multi-key operations and expose the tradeoffs
-    to the user.
+6 - 两个级别的API。 Redis API有两个级别：1）API适合的子集
+     自然地进入Redis的分布式版本和2）更复杂的API
+     支持多键操作。 如果明智地使用它们两者都很有用
+     没有办法让更复杂的多键API分布在一个
+     不违反我们其他原则的不透明方式。 我们不想提供
+     事实上它无法实现的神奇事物
+     所有情况。 相反，我们将提供命令以从一个快速迁移密钥
+     实例到另一个实例进行多键操作并暴露权衡
+     给用户。
 
-7 - We optimize for joy. We believe writing code is a lot of hard work, and the
-    only way it can be worth is by enjoying it. When there is no longer joy in
-    writing code, the best thing to do is stop. To prevent this, we'll avoid
-    taking paths that will make Redis less of a joy to develop.
+7 - 我们优化快乐。 我们相信编写代码是一项艰苦的工作，而且
+     只有这样才能享受它。 当不再有快乐时
+     编写代码，最好的办法是停止。 为了防止这种情况，我们将避免
+     采取的路径将使Redis不再喜欢发展。
