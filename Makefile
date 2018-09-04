@@ -1,4 +1,4 @@
-# Top level makefile, the real shit is at src/Makefile
+# 顶级 makefile，真正的shit在src/Makefile 里面
 
 default: all
 
