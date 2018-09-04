@@ -1,38 +1,38 @@
-Note: by contributing code to the Redis project in any form, including sending
-a pull request via Github, a code fragment or patch via private email or
-public discussion groups, you agree to release your code under the terms
-of the BSD license that you can find in the COPYING file included in the Redis
-source distribution. You will include BSD license in the COPYING file within
-each source file that you contribute.
+注意：通过以任何形式向Redis项目提供代码，包括发送
+通过Github的拉取请求，通过私人电子邮件或代码片段或补丁
+公共讨论组，您同意根据条款发布您的代码
+您可以在Redis中包含的COPYING文件中找到的BSD许可证
+来源分配。 您将在其中的COPYING文件中包含BSD许可证
+您贡献的每个源文件。
 
-# IMPORTANT: HOW TO USE REDIS GITHUB ISSUES
+# 重要提示：如何使用REDIS GITHUB ISSUES
 
-* Github issues SHOULD ONLY BE USED to report bugs, and for DETAILED feature
-  requests. Everything else belongs to the Redis Google Group.
+* Github问题应该只用于报告错误和详细功能
+   要求。 其他一切都属于Redis Google Group。
 
-  PLEASE DO NOT POST GENERAL QUESTIONS that are not about bugs or suspected
-  bugs in the Github issues system. We'll be very happy to help you and provide
-  all the support at the Reddit sub:
+请不要发布与错误或疑似无关的一般问题
+   Github问题系统中的错误。 我们非常乐意为您提供帮助和帮助
+   Reddit子队的所有支持：
 
       http://reddit.com/r/redis
 
-  There is also an active community of Redis users at Stack Overflow:
+  Stack Overflow上还有一个活跃的Redis用户社区：
 
       http://stackoverflow.com/questions/tagged/redis
 
-# How to provide a patch for a new feature
+# 如何为新功能提供补丁
 
-1. If it is a major feature or a semantical change, please post it as a new submission in r/redis on Reddit at http://reddit.com/r/redis. Try to be passionate about why the feature is needed, make users upvote your proposal to gain traction and so forth. Read feedbacks about the community. But in this first step **please don't write code yet**.
+1. 如果它是一个主要特征或语义变化，请在Reddit上的r / redis中将其作为新提交发布在 http://reddit.com/r/redis. 尽量热衷于为什么需要该功能，让用户支持您的提案以获得牵引力等等。 阅读有关社区的反馈。 但是在第一步**请不要编写代码**。
 
-2. If in step 1 you get an acknowledgment from the project leaders, use the
-   following procedure to submit a patch:
+2. 如果在步骤1中您收到项目负责人的确认，请使用
+    以下程序提交补丁：
 
-    a. Fork Redis on github ( http://help.github.com/fork-a-repo/ )
-    b. Create a topic branch (git checkout -b my_branch)
-    c. Push to your branch (git push origin my_branch)
-    d. Initiate a pull request on github ( http://help.github.com/send-pull-requests/ )
-    e. Done :)
+    a. Fork Redis在github上 ( http://help.github.com/fork-a-repo/ )
+    b. 创建主题分支 (git checkout -b my_branch)
+    c. 推送到您的 branch (git push origin my_branch)
+    d. 在github上发起一个pull请求 ( http://help.github.com/send-pull-requests/ )
+    e. 完成 :)
 
-For minor fixes just open a pull request on Github.
+对于小修复，只需在Github上打开一个pull请求。
 
-Thanks!
+谢谢！
