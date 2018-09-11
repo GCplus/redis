@@ -1,4 +1,5 @@
 #!/bin/bash
+# 升级或者下载jemalloc的shell脚本
 VER=$1
 URL="http://www.canonware.com/download/jemalloc/jemalloc-${VER}.tar.bz2"
 echo "Downloading $URL"
