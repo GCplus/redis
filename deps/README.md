@@ -1,13 +1,12 @@
-This directory contains all Redis dependencies, except for the libc that
-should be provided by the operating system.
+此目录包含Redis所有的依赖项，但由操作系统提供的libc除外。
 
-* **Jemalloc** is our memory allocator, used as replacement for libc malloc on Linux by default. It has good performances and excellent fragmentation behavior. This component is upgraded from time to time.
-* **geohash-int** is inside the dependencies directory but is actually part of the Redis project, since it is our private fork (heavily modified) of a library initially developed for Ardb, which is in turn a fork of Redis.
-* **hiredis** is the official C client library for Redis. It is used by redis-cli, redis-benchmark and Redis Sentinel. It is part of the Redis official ecosystem but is developed externally from the Redis repository, so we just upgrade it as needed.
-* **linenoise** is a readline replacement. It is developed by the same authors of Redis but is managed as a separated project and updated as needed.
-* **lua** is Lua 5.1 with minor changes for security and additional libraries.
+* **Jemalloc** 是我们的内存分配器，默认情况下用作Linux系统的 libc malloc 的替代品。它具有良好的性能和出色的内存碎片管理行为。 该组件会不定期进行升级。
+* **geohash-int** 位于依赖项目录中，但实际上是Redis项目的一部分，因为它是我们最初为Ardb开发的库的私有fork（经过大量修改），Ardb又是Redis的一个分支。
+* **hiredis** 是Redis官方用C库编写的客户端。 它可以被redis-cli，redis-benchmark和Redis Sentinel使用。 它是Redis官方生态系统的一部分，但是它独立于Redis仓库进行开发，因此我们只根据需要进行升级即可。
+* **linenoise** 是readline的替代品。 它由Redis的同一作者开发，但作为一个单独的项目进行管理，并根据需要（不时）进行更新。
+* **lua** 是对安全性和其他库进行了少量修改的lua 5.1版本。
 
-How to upgrade the above dependencies
+如何升级上面的依赖项
 ===
 
 Jemalloc
@@ -62,5 +61,3 @@ and our version:
 1. Makefile is modified to allow a different compiler than GCC.
 2. We have the implementation source code, and directly link to the following external libraries: `lua_cjson.o`, `lua_struct.o`, `lua_cmsgpack.o` and `lua_bit.o`.
 3. There is a security fix in `ldo.c`, line 498: The check for `LUA_SIGNATURE[0]` is removed in order toa void direct bytecode exectuion.
-
-
