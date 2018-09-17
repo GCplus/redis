@@ -1,4 +1,4 @@
-# Redis dependency Makefile
+# Redis dependency(依赖) Makefile
 
 uname_S:= $(shell sh -c 'uname -s 2>/dev/null || echo not')
 
@@ -14,18 +14,18 @@ default:
 
 .PHONY: default
 
-# Prerequisites target
+# Prerequisites(先决条件) target
 .make-prerequisites:
 	@touch $@
 
-# Clean everything when CFLAGS is different
+# 当CFLAGS不一样当时候清理掉一切文件
 ifneq ($(shell sh -c '[ -f .make-cflags ] && cat .make-cflags || echo none'), $(CFLAGS))
 .make-cflags: distclean
 	-(echo "$(CFLAGS)" > .make-cflags)
 .make-prerequisites: .make-cflags
 endif
 
-# Clean everything when LDFLAGS is different
+# 当LDFLAGS不同当时候清理掉一切文件
 ifneq ($(shell sh -c '[ -f .make-ldflags ] && cat .make-ldflags || echo none'), $(LDFLAGS))
 .make-ldflags: distclean
 	-(echo "$(LDFLAGS)" > .make-ldflags)
@@ -54,15 +54,15 @@ linenoise: .make-prerequisites
 .PHONY: linenoise
 
 ifeq ($(uname_S),SunOS)
-	# Make isinf() available
+	# Make isinf() available(可用)
 	LUA_CFLAGS= -D__C99FEATURES__=1
 endif
 
 LUA_CFLAGS+= -O2 -Wall -DLUA_ANSI -DENABLE_CJSON_GLOBAL -DREDIS_STATIC='' $(CFLAGS)
 LUA_LDFLAGS+= $(LDFLAGS)
-# lua's Makefile defines AR="ar rcu", which is unusual, and makes it more
-# challenging to cross-compile lua (and redis).  These defines make it easier
-# to fit redis into cross-compilation environments, which typically set AR.
+# 不同于平常的设置，lua的 Makefile 定义了AR = "ar rcu"，
+# 这样导致交叉编译(cross-compile) lua（和redis）更加充满变数。
+# 这些定义使得redis更加容易适应交叉编译的环境，交叉编译的环境通常需要设置AR。
 AR=ar
 ARFLAGS=rcu
 
