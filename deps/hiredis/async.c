@@ -57,10 +57,10 @@
         if ((ctx)->ev.cleanup) (ctx)->ev.cleanup((ctx)->ev.data); \
     } while(0);
 
-/* Forward declaration of function in hiredis.c */
+/* 转发在hiredis.c中的函数声明 */
 int __redisAppendCommand(redisContext *c, const char *cmd, size_t len);
 
-/* Functions managing dictionary of callbacks for pub/sub. */
+/* 管理pub/sub回调字典的函数 */
 static unsigned int callbackHash(const void *key) {
     return dictGenHashFunction((const unsigned char *)key,
                                sdslen((const sds)key));
@@ -83,7 +83,7 @@ static int callbackKeyCompare(void *privdata, const void *key1, const void *key2
     return memcmp(key1,key2,l1) == 0;
 }
 
-static void callbackKeyDestructor(void *privdata, void *key) {
+static void callbackKeyDestruct0or(void *privdata, void *key) {
     ((void) privdata);
     sdsfree((sds)key);
 }
@@ -111,9 +111,9 @@ static redisAsyncContext *redisAsyncInitialize(redisContext *c) {
 
     c = &(ac->c);
 
-    /* The regular connect functions will always set the flag REDIS_CONNECTED.
-     * For the async API, we want to wait until the first write event is
-     * received up before setting this flag, so reset it here. */
+    /* 常规连接(regular connect)函数将始终设置REDIS_CONNECTED的标志。
+     * 对于异步(async)API，在设置此标志之前我们要收到第一个写事件，所以在这里进行重置。 
+     */
     c->flags &= ~REDIS_CONNECTED;
 
     ac->err = 0;
@@ -139,8 +139,9 @@ static redisAsyncContext *redisAsyncInitialize(redisContext *c) {
     return ac;
 }
 
-/* We want the error field to be accessible directly instead of requiring
- * an indirection to the redisContext struct. */
+/*
+ * 我们希望可以直接访问错误字段(error field)，而不需要访问中间层redisContext结构。 
+ */
 static void __redisAsyncCopyError(redisAsyncContext *ac) {
     if (!ac)
         return;
@@ -206,9 +207,10 @@ int redisAsyncSetConnectCallback(redisAsyncContext *ac, redisConnectCallback *fn
     if (ac->onConnect == NULL) {
         ac->onConnect = fn;
 
-        /* The common way to detect an established connection is to wait for
-         * the first write event to be fired. This assumes the related event
-         * library functions are already set. */
+        /* 
+         * 检测已建立连接(established connection)的常用方法是等待触发第一个写事件。
+         * 这假设已经由相关的事件库函数设置。 
+         */
         _EL_ADD_WRITE(ac);
         return REDIS_OK;
     }
@@ -223,11 +225,11 @@ int redisAsyncSetDisconnectCallback(redisAsyncContext *ac, redisDisconnectCallba
     return REDIS_ERR;
 }
 
-/* Helper functions to push/shift callbacks */
+/* 辅助函数用于推送(push)/转移(shift)回调 */
 static int __redisPushCallback(redisCallbackList *list, redisCallback *source) {
     redisCallback *cb;
 
-    /* Copy callback from stack to heap */
+    /* 将回调从栈复制到堆 */
     cb = malloc(sizeof(*cb));
     if (cb == NULL)
         return REDIS_ERR_OOM;
@@ -237,7 +239,7 @@ static int __redisPushCallback(redisCallbackList *list, redisCallback *source) {
         cb->next = NULL;
     }
 
-    /* Store callback in list */
+    /* 将回调存储在列表中 */
     if (list->head == NULL)
         list->head = cb;
     if (list->tail != NULL)
@@ -253,7 +255,7 @@ static int __redisShiftCallback(redisCallbackList *list, redisCallback *target) 
         if (cb == list->tail)
             list->tail = NULL;
 
-        /* Copy callback from heap to stack */
+        /* 将回调从堆复制到栈 */
         if (target != NULL)
             memcpy(target,cb,sizeof(*cb));
         free(cb);
@@ -271,22 +273,22 @@ static void __redisRunCallback(redisAsyncContext *ac, redisCallback *cb, redisRe
     }
 }
 
-/* Helper function to free the context. */
+/* 辅助函数释放上下文。 */
 static void __redisAsyncFree(redisAsyncContext *ac) {
     redisContext *c = &(ac->c);
     redisCallback cb;
     dictIterator *it;
     dictEntry *de;
 
-    /* Execute pending callbacks with NULL reply. */
+    /* 使用NULL响应执行挂起的回调(callback)。 */
     while (__redisShiftCallback(&ac->replies,&cb) == REDIS_OK)
         __redisRunCallback(ac,&cb,NULL);
 
-    /* Execute callbacks for invalid commands */
+    /* 执行无效命令的回调 */
     while (__redisShiftCallback(&ac->sub.invalid,&cb) == REDIS_OK)
         __redisRunCallback(ac,&cb,NULL);
 
-    /* Run subscription callbacks callbacks with NULL reply */
+    /* 使用NULL响应运行订阅回调的回调 */
     it = dictGetIterator(ac->sub.channels);
     while ((de = dictNext(it)) != NULL)
         __redisRunCallback(ac,dictGetEntryVal(de),NULL);
@@ -299,11 +301,10 @@ static void __redisAsyncFree(redisAsyncContext *ac) {
     dictReleaseIterator(it);
     dictRelease(ac->sub.patterns);
 
-    /* Signal event lib to clean up */
+    /* 清理信号事件库(Signal event lib) */
     _EL_CLEANUP(ac);
 
-    /* Execute disconnect callback. When redisAsyncFree() initiated destroying
-     * this context, the status will always be REDIS_OK. */
+    /* 执行断开连接回调。 当redisAsyncFree()开始销毁此上下文时，状态将始终为REDIS_OK。 */
     if (ac->onDisconnect && (c->flags & REDIS_CONNECTED)) {
         if (c->flags & REDIS_FREEING) {
             ac->onDisconnect(ac,REDIS_OK);
@@ -312,14 +313,16 @@ static void __redisAsyncFree(redisAsyncContext *ac) {
         }
     }
 
-    /* Cleanup self */
+    /* 清理自身 */
     redisFree(c);
 }
 
-/* Free the async context. When this function is called from a callback,
- * control needs to be returned to redisProcessCallbacks() before actual
- * free'ing. To do so, a flag is set on the context which is picked up by
- * redisProcessCallbacks(). Otherwise, the context is immediately free'd. */
+/* 
+ * 释放异步上下文(async context)。当从回调函数调用此函数时，
+ * 在实际释放之前，control需要返回到redisProcessCallbacks()。
+ * 为此，在redisProcessCallbacks()获取的上下文中设置了一个标志。
+ * 否则，上下文立即释放。
+ */
 void redisAsyncFree(redisAsyncContext *ac) {
     redisContext *c = &(ac->c);
     c->flags |= REDIS_FREEING;
@@ -327,33 +330,30 @@ void redisAsyncFree(redisAsyncContext *ac) {
         __redisAsyncFree(ac);
 }
 
-/* Helper function to make the disconnect happen and clean up. */
+/* 辅助函数可以实现断开连接并进行清理。 */
 static void __redisAsyncDisconnect(redisAsyncContext *ac) {
     redisContext *c = &(ac->c);
 
-    /* Make sure error is accessible if there is any */
+    /* 如果有错误，请确保可以直接访问 */
     __redisAsyncCopyError(ac);
 
     if (ac->err == 0) {
-        /* For clean disconnects, there should be no pending callbacks. */
+        /* 对于干净的断开连接，应该没有待处理的回调。 */
         assert(__redisShiftCallback(&ac->replies,NULL) == REDIS_ERR);
     } else {
-        /* Disconnection is caused by an error, make sure that pending
-         * callbacks cannot call new commands. */
+        /* 由错误引起的断开，请确保挂起的回调无法调用新命令。 */
         c->flags |= REDIS_DISCONNECTING;
     }
 
-    /* For non-clean disconnects, __redisAsyncFree() will execute pending
-     * callbacks with a NULL-reply. */
+    /* 对于非干净的断开连接， __redisAsyncFree() 将使用NULL-reply响应挂起的回调。 */
     __redisAsyncFree(ac);
 }
 
-/* Tries to do a clean disconnect from Redis, meaning it stops new commands
- * from being issued, but tries to flush the output buffer and execute
- * callbacks for all remaining replies. When this function is called from a
- * callback, there might be more replies and we can safely defer disconnecting
- * to redisProcessCallbacks(). Otherwise, we can only disconnect immediately
- * when there are no pending callbacks. */
+/* 试图与Redis完全断开连接，这意味着它会停止发出新命令，
+ * 但会尝试刷新输出缓冲区(output buffer)并为所有剩余的响应执行回调。
+ * 当回调函数调用此函数时，可能会有更多响应，我们可以安全地延缓断开连接到redisProcessCallbacks()。
+ * 否则，我们只能在没有待处理的回调时立即断开连接。
+ */
 void redisAsyncDisconnect(redisAsyncContext *ac) {
     redisContext *c = &(ac->c);
     c->flags |= REDIS_DISCONNECTING;
